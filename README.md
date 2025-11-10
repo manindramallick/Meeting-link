@@ -1,7 +1,11 @@
-# Meeting-link
-Meeting-link
-Manindra is inviting you to a scheduled Zoom meeting. 
-Join Zoom Meeting 
-https://us05web.zoom.us/j/82464631516?pwd=HzKWrnZDWXENu3D7M8YGcAqLan21hY.1 
-Meeting ID: 824 6463 1516 
-Passcode: 3dwFXX 
+Manindra is inviting you to a scheduled Zoom meeting.
+
+Topic: Manindra's Zoom Meeting
+Time: Nov 10, 2025 11:30 PM Colombo
+Join Zoom Meeting
+https://us05web.zoom.us/j/84718965826?pwd=aN25jMDAdBrrdeUiRmD7Pu9rbQewOw.1
+
+Meeting ID: 847 1896 5826
+Passcode: 6mvhTg
+
+
