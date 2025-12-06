@@ -1,0 +1,18 @@
+# Elasticsearch ILM Automation (AWX)
+
+This project automatically creates ILM policies and index templates every December.
+
+## Steps
+1. Configure AWX Project → Point to this repository
+2. Create AWX Credential → Pass Elastic username/password
+3. Create Job Template → Select playbooks/run_ilm.yml
+4. Create Schedule:
+   - Frequency: Yearly
+   - Month: December
+   - Day: 1
+   - Time: 00:10
+
+Output:
+- ILM Policy: ilm_policy_2026
+- Template: template_2026
+- Index Pattern: logs-2026-*
