@@ -1,10 +1,13 @@
 
 https://github.com/salesforce/ja3
 
-https://docs.cloud.google.com/recaptcha/docs/create-assessment-website#create-assessment-REST%20API
+@Target(ElementType.METHOD)
+@Retention(RetentionPolicy.RUNTIME)
+@Documented
+public @interface MandatoryHeaderForNonProd {
+    String header();
+    String path();   // endpoint path where header is required
+}
 
-https://docs.cloud.google.com/recaptcha/docs/interpret-assessment-website
-
-https://docs.cloud.google.com/recaptcha/docs/express-standalone
 
 
