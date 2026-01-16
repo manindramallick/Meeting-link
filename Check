@@ -1,157 +1,41 @@
-==============
+==========
+sfcc-tsob:
+  credentials:
+    fs_mis_bbdl_012:
+      clientId: cid_bbdl_012
+      clientSecret: sec_bbdl_012
+    fs_mis_bgfz_015:
+      clientId: cid_bgfz_015
+      clientSecret: sec_bgfz_015
+=========
+@ConfigurationProperties(prefix = "sfcc-tsob")
+public class SfccTsobProperties {
 
-sfcc-access:
-  header-Name: vendor
-  protected-paths:
-    - /token
-
-  profiles:
-    dev:
-      - ping
-      - sfcc
-      - bond
-      - bbdl_012
-      - bgfg_015
-
-    qa:
-      - ping
-      - sfcc
-      - bond
-      - bbdl_012
-      - bgfg_015
-
-    perf:
-      - ping
-      - sfcc
-      - bond
-      - bbdl_012
-      - bgfg_015
-      - bbdl_ddr
-
-    prod:
-      - ping
-      - sfcc
-      - bond
-      - bbdl_prd
-	  
-============
-
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
-import org.springframework.boot.context.properties.ConfigurationProperties;
-
-
-import java.util.*;
-
-@Getter
-@ConfigurationProperties(prefix = "sfcc-access")
-public class VendorAccessProperties {
-
-    private List<String> protectedPaths;
-    private String headerName;
-    private Map<String, List<String>> profiles;
-
-    public VendorAccessProperties(List<String> protectedPaths, String headerName, Map<String, List<String>> profiles) {
-        this.protectedPaths = protectedPaths;
-        this.headerName = headerName;
-        this.profiles = profiles;
-    }
-
-
-    public Set<String> allowedForProfile(String profile) {
-        List<String> vendors = profiles.get(profile);
-        if (vendors == null) return Collections.emptySet();
-        Set<String> distinctVendors = new HashSet<>(vendors.size());
-        for (String v : vendors) {
-            if (v != null) {
-                distinctVendors.add(v.trim().toLowerCase(Locale.ROOT));
-            }
-        }
-        return Collections.unmodifiableSet(distinctVendors);
-    }
-
-
-    public List<String> getProtectedPaths() {
-        return protectedPaths;
-    }
-
-    public String getHeaderName() {
-        return headerName;
-    }
+    private Map<String, ClientCredentials> credentials;
+	
+	public record ClientCredentials(String clientId, String clientSecret) {
 }
-====================
-package com.spring;
 
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-import lombok.AllArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
-import org.springframework.core.env.Environment;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-import java.io.IOException;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Set;
+====
+@Service
+public class HelloService {
 
-@Component
-@AllArgsConstructor
-@Slf4j
-public class VendorHeaderFilter extends OncePerRequestFilter {
+    private final SfccTsobProperties sfccTsobProperties;
 
-
-    private  VendorAccessProperties props;
-    private  Environment env;
-
-
-    @Override
-    protected void doFilterInternal(jakarta.servlet.http.HttpServletRequest request, jakarta.servlet.http.HttpServletResponse response, jakarta.servlet.FilterChain filterChain) throws ServletException, IOException {
-       String path = request.getRequestURI();
-       System.out.println("VendorHeaderFilter checking path: "+path);
-       System.out.println("profile is: "+resolveActiveProfile());
-        if (props.getProtectedPaths().stream().allMatch(path::equals)  && request.getHeader(props.getHeaderName()) != null) {
-            List<String> headerValueList= Arrays.asList(request.getHeader(props.getHeaderName()).split(","));
-            Set<String> allowedVendor = props.allowedForProfile(resolveActiveProfile());
-            boolean match = headerValueList.stream().anyMatch(allowedVendor::contains);
-            if (!match) {
-                reject(response);
-                return;
-            }
-
-        }
-         filterChain.doFilter(request,response);
+    HelloService(SfccTsobProperties sfccTsobProperties) {
+        this.sfccTsobProperties = sfccTsobProperties;
     }
 
-   private String resolveActiveProfile() {
-        String[] active = env.getActiveProfiles();
-        if (active.length > 0) {
-            return active[0];
-        }
-        String prop = env.getProperty("spring.profiles.active");
-        if (prop != null && !prop.isBlank()) {
-            return Arrays.stream(prop.split(","))
-                    .map(String::trim)
-                    .findFirst()
-                    .orElse("default");
-        }
-        return "default";
+    public ClientCredentials get(String dwEnv) {
+    var map = sfccTsobProperties.getCredentials();
+        if (map == null || !map.containsKey(dwEnv)) {
+        throw new IllegalArgumentException("Unknown dw-env: " + dwEnv);
     }
-
-
-    private void reject(HttpServletResponse response) throws ServletException, IOException {
-        response.setStatus(HttpStatus.BAD_REQUEST.value());
-        response.getWriter().write("{\"msg\":\"provide correct vendor header\"}");
-
-
+    var c = map.get(dwEnv);
+        if (c.clientId() == null || c.clientSecret() == null) {
+        throw new IllegalStateException("Missing clientId or clientSecret for dw-env: " + dwEnv);
     }
-
-
+        return new ClientCredentials(c.clientId(), c.clientSecret());
 }
-===========
-@EnableConfigurationProperties(VendorAccessProperties.class)
+
+==========
