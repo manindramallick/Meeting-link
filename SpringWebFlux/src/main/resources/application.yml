@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: SpringWebFlux
+
+token:
+  environment_default: ${ENV_NAME_DEFULT:local}
+  environment:
+    name: ${ENV_NAME:}
+    secret: ${ENV_SECRET:secret}
+    expiration: ${ENV_EXPIRATION:3600}
+
+
+

@@ -1,0 +1,10 @@
+spring:
+  application:
+    name: SpringWebFlux
+
+token:
+  environment_default: local
+  environment:
+    name: dev
+    secret: test-secret
+    expiration: "3600000"
